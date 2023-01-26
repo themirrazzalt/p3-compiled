@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>P3 Configuration</title>
+        <link rel="stylesheet" href="p3_settings.css" />
+    </head>
+    <body>
+        <div class="tabs">
+            <div class="tab-strip">
+                <div class="tab-auth tab-current">
+                    Auth
+                </div>
+                <div class="tab-diagnostics">
+                    Diagnostics
+                </div>
+                <div class="tab-peers">
+                    Peers
+                </div>
+                <div class="left-over-space">
+                </div>
+            </div>
+            <div class="view-strip">
+                <div class="view-auth view-current">
+                    <p class="p3-explanation">
+                        P3 (Pseudo Peer-to-Peer or PPP) allows programs on your device to communicate using a relay server.
+                    </p>
+                    <p class="p3-status-container">
+                        <b>Status:</b> <span class="p3-status-light" data-connected="true"></span> <span class="p3-status">Not Connected</span>
+                    </p>
+                    <p>
+                        Connect on Startup <input type="checkbox" checked class='p3-on-startup' />
+                    </p>
+                    <p>
+                        <b>Relay URL</b> <br>
+                        <input disabled class='p3-relay-url' value="wss://p3.windows96.net" />
+                        <br>
+                        <b>Parameters</b> <br>
+                        <input onfocus="this.type = 'text'" onblur="this.type='password'" type="password" class='p3-parameters' />
+                        <br>
+                        <b>Address</b> <br>
+                        <input disabled class='p3-address' />
+                    </p>
+                </div>
+            </div>
+            <p style="text-align: right">
+                <button class='p3-connector' onclick="this.innerText=='Connect'?P3_Start():P3_Stop()">Connect</button>
+                <button onclick="window.close()">Cancel</button>
+                <button onclick="window.close()">OK</button>
+            </p>
+        </div>
+        <script src='p3_settings.js'></script>
+    </body>
+</html>
