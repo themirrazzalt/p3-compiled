@@ -141,3 +141,5 @@ function P3_Start() {
 function P3_Stop() {
     ipc.of.mikep3.emit('SystemStop');
 }
+
+module.exports = global_api;
