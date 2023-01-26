@@ -19,3 +19,8 @@ Just press the P3 icon in your system tray!
 
 ## What programming languages can I use with this?
 I'm planning on writing a NodeJS SDK, Python SDK, and C/C++ (.NET) API. Also feel free to look through the source and make your own!
+
+## SDK Development Process
+NodeJS: Partially Complete [/root/node_api.js](node_api.js)<br>
+C/C++: Not Started
+Python: Not Started
