@@ -3,9 +3,16 @@ var IPC = require('node-ipc').IPCModule;
 var P3 = require('./node-p3');
 var Util=require('./util');
 var os = require('os');
+var child_process = require('child_process');
+var { Tray,app } = require('electron');
 var $Home = os.homedir();
 var argv = process.argv.slice(2);
-
+app.whenReady().then(() => {
+    var tray = new Tray('./p3_tray.png');
+    tray.on('click', () => {
+        child_process.spawn('electron', ['./p3cfg.js']);
+    });
+});
 (async () => {
     var ipc = new IPC();
     ipc.config.retry = 1500;
