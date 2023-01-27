@@ -8,11 +8,13 @@ Here is an example of the data sent:
 {
   "cmd": "p3.commandName",
   "args": {"arg":1,"text": "some data"},
-  "reqId": "b3af-946684800000"
+  "id": "b3af-946684800000"
 }
 ```
 The request ID consists of a 4-to-5 character randomly-generated hexidecimal number, followed by a hyphen and then the timestamp represented in milliseconds since the UNIX Epoch.
-(Fun fact: you can get the amount of milliseconds in Node.JS or browser JavaScript using `Date.now()` or `(new Date).getTime()`)
+(Fun fact: you can get the amount of milliseconds in Node.JS or browser JavaScript using `Date.now()` or `(new Date).getTime()`);
+
+You'll then recieve a response using the `cmd-{id}` event. For example, for the demo event above, the response would be listened to on `cmd-b3af-946684800000`.
 
 ## Subscriptions
 A subscription is when the client recieves events from the server on demand. They can always unsubscribe.
@@ -58,3 +60,43 @@ This fires whenever a port is being listened to by another app.
   "port": 4321
 }
 ```
+
+## Initalizing
+In order for lots of commands to work, you need to initalize your socket. Do this by sending the `p3.Socket` command.
+You'll recieve and event with similar data:
+```json
+{
+  "state": "connected",
+  "connected": true,
+  "address": "duway4y02c.ppp",
+  "connectsOnStart": false,
+  "portsInUse": [737,18404,9]
+}
+```
+
+## Creating a client
+A huge part of P3 is connecting to a server. You can't do that without a client! Use the `p3.client` event with the following arguments:
+* `dest` is the P3 address of the server you're connecting to
+* `port` is which port of the server you're going to connect to
+
+It'll then send back this JSON:
+```json
+{
+  "id": "ff83-946684809300"
+}
+```
+The request ID for this message is now associated with the client.
+
+### Recieving messages from the server
+You need to be subscribed to (for example) `subscription-ff83-946684809300` (or `subscription-<request id>`) to listen.
+You'll get messages with a `type` paramater. The type is either `connect`, `disconnect`, `fail`, or `message`.
+The `message` event also has a `message` paramater, containing the JSON data the server sent back.
+
+### Sending messages to the server
+Using the `p3.emitToServer` event, you just need the following arguments:
+* `id` is the request ID of the command that created the client
+* `data` is what is sent to the server (JSON please)
+
+### Disconnecting from the P3 server
+We all know the server can kick you. But you can kick the server (at least kick the connection to the server).
+Using the `p3.disconnectFromServer` event, you just need to specify the client's ID inside of the `id` paramater, and boom. Client disconnected.
