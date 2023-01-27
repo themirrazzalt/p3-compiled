@@ -39,6 +39,7 @@ class P3 {
     url=String(url||"wss://p3.windows96.net/")||"wss://p3.windows96.net/"
 
 var $CONNECTED=false;
+var $CONNECTING=false;
 
 var $totalMsg=0;
 var letters = "abcdefghijklmnopqrstuvwxyz+1234567890/ABCDEFGH,:#\\?@-_]{}~";
@@ -65,6 +66,10 @@ this.portInUse = function (port) {
     return true;
   }
   return false;
+}
+
+this.getPortsInUse = function () {
+  return Object.keys(ports);
 }
 
 function $ResponsePort() {
@@ -491,7 +496,8 @@ skt.on("hello", function(e){
           reason: "Address is in use",
           code: "ADDRESS_IN_USE"
         }
-      )
+      );
+      $CONNECTING = false;
     } else if(!e.success) {return } else {
       $CONNECTED=true
       $ADR=e.address
@@ -585,12 +591,24 @@ skt.on("hello", function(e){
      */
     this.kill=function(){
       skt.close()
+      $CONNECTED = false;
+      $CONNECTING = false;
     }
     /**
      * Starts the P3 session if it has been killed.
      */
     this.start=function(){
       skt.open()
+      $CONNECTING = true;
+    }
+    this.getState = function () {
+      if($CONNECTED) {
+        return 'online'
+      } else if($CONNECTING) {
+        return 'connecting'
+      } else {
+        return 'offline'
+      }
     }
   }
 

@@ -3,5 +3,16 @@
     "electron": "^22.1.0",
     "node-ipc": "^11.1.0",
     "socket.io-client": "^4.5.4"
-  }
+  },
+  "name": "p3compiled-linux-unix",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ./index.js"
+  },
+  "author": "themirrazz",
+  "license": "GPL-3.0-or-later",
+  "description": ""
 }
