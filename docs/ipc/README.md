@@ -132,4 +132,15 @@ Using the `p3.emitToClient` event, you send the following arguments:
 > Good people kick the bad people off of the non-existent banking and email and chatting services all sent through P3.
 > People use it to P3A-ban people who try to DDoS their servers or send to many requests (HTTP 429 moment).
 > Everyone uses it.
+
 \- Said no one ever
+
+You just need the peer ID in the `id` argument and the port in the `port`, then _kick_ it all off (get it?) by sending that data out using the `p3.kickClient` event.
+
+## Starting/stopping the server
+Use the `p3.start` and `p3.stop` events.
+
+## I need to make my own SDK - but it seems _soooooooo_ complicated!
+Take a look at the [NodeJS Raw API Source Code](/node-api/rawipcapi.js) - the Raw API (internally known as `RawIPCApi`) is used by the one that actually gets exposed - it basically handles command sending _and_ subscriptions without hastle - by looking at this source seperately, it might make it a bit easier for creating an unoffical SDK. If you've recreated the `RawIPCApi` but still need to add the external API (eg the functions that make it P3-y) then take a look at the [NodeJS CompiledP3 SDK Source Code](/node-api/index.js), internally refferred to as the "Index API" or `cP3NodeSdk`.
+
+Make an unofficial SDK, perhaps a Swift or C++ one for macOS, maybe a Rust one for cross-platform support, or perhaps you want to write one in PHP? Just hit up an issue on this repo - we'll make sure to add it!
