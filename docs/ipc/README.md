@@ -120,4 +120,7 @@ They have the following data:
 * `message`, which is only present on an event with a type of `message`
 
 ### Sending messages to the client
-Using the
+Using the `p3.emitToClient` event, you send the following arguments:
+* `data` - you know what it is by now ;)
+* `id`, which is the peer ID
+* the `port` this connection takes place on (two connections on two different ports may have the same peer ID - *\_gasp\_*)
