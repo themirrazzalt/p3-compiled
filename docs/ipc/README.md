@@ -100,3 +100,24 @@ Using the `p3.emitToServer` event, you just need the following arguments:
 ### Disconnecting from the P3 server
 We all know the server can kick you. But you can kick the server (at least kick the connection to the server).
 Using the `p3.disconnectFromServer` event, you just need to specify the client's ID inside of the `id` paramater, and boom. Client disconnected.
+
+## Hosting a P3 server
+Clients are great and all, but servers are _waaaaaaaaay_ more important. Because without servers, you wouldn't have anything to connect all your clients too! Let's learn how to create a server! It starts with the `p3.createServer` command using ~~these arguments~~ this argument:
+* `port` is the port of the server.
+
+### Detecting connections
+You'll get a subscription event on `subscription-pt<port>`. So if you host on port 123, you'll recieve a `subscription-pt123` on every connection to that port. The data has the following useful information:
+* `address` is the P3 address of the client that connected
+* `id` is the peer ID - in most cases of the NodeJS `mikesoftp3` library its used as an internal, but here it identifies a connection to be reused
+* `responsePort` is the port to respond to (not really needed - `mikesoftp3` takes care of it for you, but useful for debugging!)
+
+You'll then want to subscribe to the `subscription-fc<peer id>` channel. For example, if the peer Id is `q9eEcx9eBe+3bHwk2LxO8sTt6==`, you'd subscribe to `subscription-fcq9eEcx9eBe+3bHwk2LxO8sTt6==`.
+
+### Getting Messages
+You'll recieve messages on the subscription mentioned in the `Detecting connections` section.
+They have the following data:
+* `type`, which can either be `message` or `disconnect`
+* `message`, which is only present on an event with a type of `message`
+
+### Sending messages to the client
+Using the
