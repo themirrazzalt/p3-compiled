@@ -4,6 +4,9 @@ A system-wide P3 library built using IPC for Windows, Mac, Linux, and UNIX
 ## What is this?
 You can use my `mikesoftp3` package with Electron for creating apps that use P3. But the system doesn't share the same P3 address. That's what this is: seamless OS integration almost identical to the type in Windows 96.
 
+## Documentation
+View the Documentation for the [Node.JS SDK](/docs/node/README.md), [Python SDK](/docs/python/README.md), or [IPC Event Stream](/docs/ipc/README.md).
+
 ## Why does this exist?
 So you can use P3 anywhere. On your PC running Windows 11 or 7, your Linux or UNIX machine, which might be the latest, most powerful Macintosh, or a 4GB Raspberry Pi. Run the Windows edition on Linux using WINE, and even run it on ChromeOS.
 The possibilites are endless. Plus, someone has to re-create SuperTerm. It's easier with this.
