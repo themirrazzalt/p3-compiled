@@ -124,3 +124,12 @@ Using the `p3.emitToClient` event, you send the following arguments:
 * `data` - you know what it is by now ;)
 * `id`, which is the peer ID
 * the `port` this connection takes place on (two connections on two different ports may have the same peer ID - *\_gasp\_*)
+
+### Kicking the Client
+> The ability to kick clients and users off of your servers or preventing them access is used by everyone, the good, bad, and neutral.
+> The neutral use it to kick the bad people off to prevent trolls.
+> The bad people use it to kick the US government off their P3 chatrooms, and hack random ones to kick the mods off.
+> Good people kick the bad people off of the non-existent banking and email and chatting services all sent through P3.
+> People use it to P3A-ban people who try to DDoS their servers or send to many requests (HTTP 429 moment).
+> Everyone uses it.
+\- Said no one ever
