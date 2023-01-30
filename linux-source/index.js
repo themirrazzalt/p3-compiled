@@ -17,6 +17,8 @@ var Intern = {
 app.whenReady().then(() => {
     _main();
     var tray = new Tray('./p3_tray.png');
+    tray.setToolTip('P3');
+    tray.setTitle('P3');
     tray.on('click', () => {
         ShowP3Settings();
     });
@@ -75,7 +77,7 @@ var _main = (async () => {
     var config=JSON.parse(await fs.readstr(`${$Home}/.mikep3/config.json`));
     p3 = new P3({
         secret: config.secret,
-        autoinit: Boolean(config.autoconnect||false),
+        autoinit: false,
         url: config.relayServer || 'wss://p3.windows96.net'
     });
     var GetSocketAssociations = function (socket) {
@@ -129,6 +131,18 @@ var _main = (async () => {
             JSON.stringify(config)
         );
     }
+    function SendGlobalSubscription(id, data, end) {
+        sockets.forEach(socket => {
+            ipc.server.emit(
+                socket.id,
+                `subscription-${id}`,
+                {
+                    end: Boolean(end||false),
+                    data: data
+                }
+            );
+        });
+    }
     function SendSubscription (socket,id, data, end) {
         ipc.server.emit(
             socket,
@@ -140,8 +154,17 @@ var _main = (async () => {
         );
     }
     ipc.serve(
-        '/tmp/svc.mikep3',
+        `${os.homedir()}/.mikep3/Svc`,
         function () {
+            if(config.autoconnect) {
+                p3.start();
+            }
+            p3.on('state-change', function (data) {
+                SendGlobalSubscription(
+                    'state-change',
+                    data
+                );
+            });
             ipc.server.on(
                 'command',
                 function (data, socket) {
@@ -152,7 +175,7 @@ var _main = (async () => {
                         ipc.server.emit(
                             socket,
                             'cmd-'+reqid,
-                            dat
+                            {data:dat}
                         );
                     }
                     if(!(cmd && reqid)) { return; }
@@ -172,7 +195,7 @@ var _main = (async () => {
                             connectsOnStart: config.autoconnect
                         });
                     } else if(cmd == 'p3.active') {
-                        reply(p3.active());
+                        reply(p3.active);
                     } else if(cmd == 'p3.state') {
                         reply(p3.getState());
                     } else if(cmd == 'p3.portsInUse') {
@@ -204,7 +227,7 @@ var _main = (async () => {
                             });
                             return false;
                         }
-                        if(isNaN(args.port)) {
+                        if(isNaN(args.port) || args.port<0) {
                             reply({
                                 error: 'TypeError',
                                 message: 'Port must be a positive integer'
@@ -221,15 +244,21 @@ var _main = (async () => {
                         sock.ports[args.port] = {
                             clients: {}
                         };
+                        SendGlobalSubscription(
+                            'port-claimed',
+                            {
+                                port: args.port
+                            }
+                        );
                         p3.listen(args.port, function (client) {
-                            sock[args.port].clients[client.peerId] = client;
+                            sock.ports[args.port].clients[client.peerId] = client;
                             SendSubscription(
                                 socket,
                                 `pt${args.port}`,
                                 {
                                     id: client.peerId,
                                     address: client.peer.adr,
-                                    responePort: client.peer.port
+                                    responsePort: client.peer.port
                                 }
                             );
                             client.on('message', data => {
@@ -256,6 +285,35 @@ var _main = (async () => {
                             });
                         });
                         reply(true);
+                    } else if(cmd == 'p3.killPort') {
+                        if(!p3.portInUse(args.port)) {
+                            return reply({
+                                error: 'Port is not in use'
+                            });
+                        }
+                        var ports = GetAllPortsFromSocket(socket);
+                        if(!ports) {
+                            return reply({
+                                error: 'Socket not registered'
+                            });
+                        }
+                        var port = GetPortFromSocket(socket,args.port);
+                        if(!port) {
+                            return reply({
+                                error: 'Cannot kill port; the port was started from a different IPC socket'
+                            });
+                        }
+                        Object.values(port.clients).forEach(client => {
+                            client.peer.disconnect();
+                        });
+                        p3.endPort(args.port);
+                        SendGlobalSubscription(
+                            'ports-freed',
+                            {
+                                port: args.port
+                            }
+                        );
+                        reply(true);
                     } else if(cmd == 'p3.kickClient') {
                         if(!(args.id && args.port)) {
                             return reply(false);
@@ -267,9 +325,16 @@ var _main = (async () => {
                         reply(true);
                     } else if(cmd == 'p3.disconnectFromServer') {
                         if(!args.id) { return reply(false); }
-                        var client = GetClientFromSocket(socket, id);
+                        var client = GetClientFromSocket(socket, args.id);
                         if(!client) { return reply(false); }
                         client.end();
+                        reply(true);
+                        SendGlobalSubscription(
+                            'ports-freed',
+                            {
+                                port: client.$CLIENT.responsePort
+                            }
+                        );
                     } else if(cmd == 'p3.start') {
                         p3.start();
                         reply(true);
@@ -277,7 +342,7 @@ var _main = (async () => {
                         sockets.forEach(sock => {
                             var assoc = GetSocketAssociations(sock);
                             var ports = GetAllPortsFromSocket(sock);
-                            var clients = GetAllPortsFromSocket(sock);
+                            var clients = GetAllClientsFromSocket(sock);
                             if(ports) {
                                 ports.forEach(port => {
                                     Object.values(port.port.clients).forEach(client => {
@@ -326,6 +391,12 @@ var _main = (async () => {
                             id: reqid
                         });
                         var _C = p3.createClient(args.dest, args.port);
+                        SendGlobalSubscription(
+                            'port-claimed',
+                            {
+                                port: _C.$CLIENT.responsePort
+                            }
+                        );
                         GetSocketAssociations(socket).clients[reqid] = _C;
                         _C.on('disconnect', _ => {
                             GetSocketAssociations(socket).clients[reqid] = undefined;
@@ -337,6 +408,12 @@ var _main = (async () => {
                                     type: 'disconnect'
                                 },
                                 true
+                            );
+                            SendGlobalSubscription(
+                                'ports-freed',
+                                {
+                                    port: _C.$CLIENT.responsePort
+                                }
                             );
                         });
                         _C.on('fail', _ => {
@@ -373,7 +450,7 @@ var _main = (async () => {
                     }
                 }
             );
-            ipc.server.on('socket.disconnect', socket => {
+            ipc.server.on('socket.disconnected', socket => {
                 var ports = GetAllPortsFromSocket(socket);
                 var clients = GetAllClientsFromSocket(socket);
                 if(ports) {
