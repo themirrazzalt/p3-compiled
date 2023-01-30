@@ -4,16 +4,43 @@ var P3 = require('./node-p3');
 var Util=require('./util');
 var os = require('os');
 var child_process = require('child_process');
-var { Tray,app,BrowserWindow } = require('electron');
+var { Tray,app,BrowserWindow,ipcMain } = require('electron');
 var $Home = os.homedir();
 var argv = process.argv.slice(2);
 /**
  * @type {P3}
  */
 var p3;
+var config;
 var Intern = {
     CfgWindow: null
 }
+
+ipcMain.on('status', event => {
+    event.returnValue = {
+        address: p3.adr,
+        state: p3.getState(),
+        portsInUse: p3.getPortsInUse(),
+        connected: p3.active,
+        secret: p3.key,
+        autostart: config.auto_connect
+    };
+});
+
+ipcMain.on('p3.setkey', async (event,key) => {
+    if(p3.active) { return false; }
+    config.secret = key;
+    await fs.writestr(`${$Home}/.mikep3/config.json`,JSON.stringify(config));
+});
+
+ipcMain.on('p3.setOnStart', async (event,ons) => {
+    config.auto_connect = ons;
+    await fs.writestr(`${$Home}/.mikep3/config.json`,JSON.stringify(config));
+});
+
+ipcMain.on('p3.start', _ => { p3.start(); });
+ipcMain.on('p3.stop', _ => { p3.kill(); });
+
 app.whenReady().then(() => {
     _main();
     var tray = new Tray('./p3_tray.png');
@@ -60,6 +87,7 @@ var _main = (async () => {
     var ipc = new IPC();
     ipc.config.retry = 1500;
     ipc.config.id = 'mikep3';
+    ipc.config.silent = true;
     var sockets = [];
     if(!await fs.exists(`${$Home}/.mikep3`)) {
         await fs.mkdir(`${$Home}/.mikep3`);
@@ -74,7 +102,7 @@ var _main = (async () => {
             })
         );
     };
-    var config=JSON.parse(await fs.readstr(`${$Home}/.mikep3/config.json`));
+    config=JSON.parse(await fs.readstr(`${$Home}/.mikep3/config.json`));
     p3 = new P3({
         secret: config.secret,
         autoinit: false,
@@ -156,7 +184,7 @@ var _main = (async () => {
     ipc.serve(
         `${os.homedir()}/.mikep3/Svc`,
         function () {
-            if(config.autoconnect) {
+            if(config.auto_connect) {
                 p3.start();
             }
             p3.on('state-change', function (data) {
@@ -377,7 +405,7 @@ var _main = (async () => {
                                 });
                             }
                         });
-                        p3.stop();
+                        p3.kill();
                         reply(true);
                     } else if(cmd == 'p3.client') {
                         if(!(args.port && args.dest)) {

@@ -21,8 +21,48 @@ body {
     width: 12px;
 }
 
-.p3-status-light[data-connected="true"] {
+.p3-status-light[data-state="online"] {
     background: rgb(31, 190, 31);
+}
+
+.p3-ports-list {
+    width: 100%;
+    height: 390px;
+}
+
+.p3-port-entries {
+    height: 373px;
+    overflow-y: scroll;
+}
+
+.p3-port-entries::-webkit-scrollbar {
+    display: none;
+}
+
+.p3-port-row {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.p3-port-port, .p3-port-flags, .p3-port-type {
+    width: 100%;
+}
+
+.p3-status-light[data-state="connecting"] {
+    background: rgb(190, 140, 31);
+}
+
+.p3-status-light[data-state="offline"] {
+    background: rgb(199, 21, 21);
+}
+
+.p3-status-light[data-state="error"] {
+    background: rgb(107, 0, 0);
+}
+
+.p3-status-light[data-state="loading"] {
+    background: rgb(88, 88, 88);
 }
 
 .tabs {
@@ -61,7 +101,7 @@ body {
     height: 100%;
 }
 
-.view-strip div {
+.view-strip div[class^='view'] {
     display: none;
 }
 

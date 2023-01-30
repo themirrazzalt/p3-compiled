@@ -425,7 +425,8 @@ function CreateMessageListener(n$,i$,a$,p$,h$) {
 
 var L$ = {
   'fail':[],
-  'connect':[]
+  'connect':[],
+  'state-change': []
 };
 
 
@@ -498,6 +499,13 @@ skt.on("hello", function(e){
         }
       );
       $CONNECTING = false;
+      $EVT.dispatch(
+        'state-change',
+        {
+          address: home.adr,
+          state: 'offline'
+        }
+      );
     } else if(!e.success) {return } else {
       $CONNECTED=true
       $ADR=e.address
@@ -506,7 +514,14 @@ skt.on("hello", function(e){
         {
           address:$ADR
         }
-      )
+      );
+      $EVT.dispatch(
+        'state-change',
+        {
+          address: e.address,
+          state: 'online'
+        }
+      );
     }
 })
     /**
@@ -593,6 +608,10 @@ skt.on("hello", function(e){
       skt.close()
       $CONNECTED = false;
       $CONNECTING = false;
+      $EVT.dispatch('state-change',{
+        state: 'offline',
+        address: this.adr
+      });
     }
     /**
      * Starts the P3 session if it has been killed.
@@ -600,6 +619,10 @@ skt.on("hello", function(e){
     this.start=function(){
       skt.open()
       $CONNECTING = true;
+      $EVT.dispatch('state-change',{
+        state: 'connecting',
+        address: this.adr
+      });
     }
     this.getState = function () {
       if($CONNECTED) {

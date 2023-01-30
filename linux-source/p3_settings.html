@@ -7,13 +7,13 @@
     <body>
         <div class="tabs">
             <div class="tab-strip">
-                <div class="tab-auth tab-current">
+                <div onclick="switchTab('auth')" class="tab-auth tab-current">
                     Auth
                 </div>
-                <div class="tab-diagnostics">
+                <div onclick="switchTab('diagnostics')" class="tab-diagnostics">
                     Diagnostics
                 </div>
-                <div class="tab-peers">
+                <div onclick="switchTab('peers')" class="tab-peers">
                     Peers
                 </div>
                 <div class="left-over-space">
@@ -25,21 +25,48 @@
                         P3 (Pseudo Peer-to-Peer or PPP) allows programs on your device to communicate using a relay server.
                     </p>
                     <p class="p3-status-container">
-                        <b>Status:</b> <span class="p3-status-light" data-connected="true"></span> <span class="p3-status">Not Connected</span>
+                        <b>Status:</b> <span class="p3-status-light" data-state="loading"></span> <span class="p3-status">Not Connected</span>
                     </p>
                     <p>
-                        Connect on Startup <input type="checkbox" checked class='p3-on-startup' />
+                        Connect on Startup <input onchange="P3_SetOnStart(this.checked)" type="checkbox" class='p3-on-startup' />
                     </p>
                     <p>
                         <b>Relay URL</b> <br>
                         <input disabled class='p3-relay-url' value="wss://p3.windows96.net" />
                         <br>
                         <b>Parameters</b> <br>
-                        <input onfocus="this.type = 'text'" onblur="this.type='password'" type="password" class='p3-parameters' />
+                        <input onfocus="this.type = 'text'" onblur="this.type='password';P3_SetKey(this.value);" type="password" class='p3-parameters' />
                         <br>
                         <b>Address</b> <br>
                         <input disabled class='p3-address' />
                     </p>
+                </div>
+                <div class="view-diagnostics">
+                    <p>
+                        <b>Latency</b><br>
+                        Enter a P3 client address below to test latency.
+                        <br>
+                    </p>
+                    <div style="display:flex;flex-direction:row;">
+                        <input class="p3-latency-address" style="width: 100%;" placeholder="example.ppp" />
+                        <button class="p3-latency-button" onclick="alert('Latency test coming soon!')">Test</button>
+                    </div>
+                    <p>
+                        <b>Ports</b><br>
+                        This is a list of ports currently in use.
+                    </p>
+                    <div class="p3-ports-list">
+                        <div class="p3-port-row">
+                            <div class="p3-port-port"><b>Port</b></div>
+                            <div class="p3-port-flags"><b>Flags</b></div>
+                            <div class="p3-port-type"><b>Type</b></div>
+                        </div>
+                        <div class="p3-port-entries">
+                        </div>
+                    </div>
+                </div>
+                <div class="view-peers">
+                    <p>To-do</p>
                 </div>
             </div>
             <p style="text-align: right;margin: 0px;">
