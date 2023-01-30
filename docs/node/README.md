@@ -99,3 +99,21 @@ Properties:
    `address` The peer's P3 address
    `port` The peer's response port
    `rpt` The peer's response port (alternate)
+
+### `kill`
+```ts
+async kill () => void
+```
+Kills the peer
+
+### `kick`
+```ts
+async kick() => void
+```
+Alias for `P3Peer.kill()`
+
+### `emit`
+```ts
+async emit(data: any) => void
+```
+Emits data to the client
