@@ -4,7 +4,7 @@ var P3 = require('./node-p3');
 var Util=require('./util');
 var os = require('os');
 var child_process = require('child_process');
-var { Tray,app,BrowserWindow,ipcMain } = require('electron');
+var { Tray,app,BrowserWindow,ipcMain, Menu, MenuItem } = require('electron');
 var $Home = os.homedir();
 var argv = process.argv.slice(2);
 /**
@@ -41,9 +41,88 @@ ipcMain.on('p3.setOnStart', async (event,ons) => {
 ipcMain.on('p3.start', _ => { p3.start(); });
 ipcMain.on('p3.stop', _ => { p3.kill(); });
 
+function getTrayStatusMenu(state) {
+    var tray_menu = new Menu();
+    tray_menu.append(new MenuItem(
+        {
+            type: 'normal',
+            label:(function label() {
+                var state =state ||( p3?p3.getState():'offline');
+                if(state == 'online') {
+                    return `Online - ${(p3||{}).adr || ""}`
+                } else if(state == 'connecting') {
+                    return "Connecting..."
+                } else {
+                    return "Offline"
+                }
+            })()
+        }
+    ));
+    tray_menu.append(new MenuItem(
+        {
+            type: 'separator'
+        }
+    ));
+    tray_menu.append(new MenuItem(
+        {
+            type: 'normal',
+            label: 'P3 Settings',
+            click: function () {
+                ShowP3Settings();
+            }
+        }
+    ));
+    tray_menu.append(new MenuItem(
+        {
+            type: 'normal',
+            label: 'Diagnostics',
+            click: function () {
+                ShowP3Diagnostics();
+            }
+        }
+    ));
+    tray_menu.append(new MenuItem(
+        {
+            type: 'normal',
+            label: 'Peers',
+            click: function () {
+                ShowP3PeerSettings();
+            }
+        }
+    ));
+    tray_menu.append(new MenuItem(
+        {
+            type: 'separator'
+        }
+    ));
+    tray_menu.append(new MenuItem(
+        {
+            type: 'normal',
+            label: (p3||{}).active ? 'Disconnect' : 'Connect',
+            click: function () {
+                if(p3.getState() == 'connecting') { return }
+                if(p3.active) {
+                    p3.kill()
+                } else {
+                    p3.start()
+                }
+            }
+        }
+    ));
+    return tray_menu;
+}
+
 app.whenReady().then(() => {
     _main();
     var tray = new Tray('./p3_tray.png');
+    tray.setContextMenu(getTrayStatusMenu('offline'));
+    var state = 'offline';
+    setInterval(()=>{
+        if(!p3) { return }
+        if(p3.getState() == state) { return }
+        state = p3.getState();
+        tray.setContextMenu(getTrayStatusMenu());
+    });
     tray.setToolTip('P3');
     tray.setTitle('P3');
     tray.on('click', () => {
@@ -68,6 +147,7 @@ function ShowP3Settings() {
         resizable: false,
         maximizable: false,
         fullscreenable: false,
+        icon: './p3_tray.png',
         webPreferences: {
             nodeIntegration: true,
             nodeIntegrationInWorker: true,
@@ -76,10 +156,77 @@ function ShowP3Settings() {
             devTools: true,
             contextIsolation: false
         },
-        title: 'P3 Configuration'
+        title: 'P3 Configuration',
     });
+    Intern.CfgWindow.setMenu(new Menu());
     Intern.CfgWindow.loadFile('./p3_settings.html');
     Intern.CfgWindow.on('closed', () => Intern.CfgWindow = null);
+}
+
+function ShowP3Diagnostics() {
+    if(Intern.CfgWindow) {
+        if(Intern.CfgWindow.isMinimized()) {
+            Intern.CfgWindow.restore();
+        } else {
+            Intern.CfgWindow.focus();
+        }
+        Intern.CfgWindow.webContents.send('switch-tab','diagnostics');
+        return false;
+    }
+    Intern.CfgWindow = new BrowserWindow({
+        width: 380,
+        height: 625,
+        resizable: false,
+        maximizable: false,
+        icon: './p3_tray.png',
+        fullscreenable: false,
+        webPreferences: {
+            nodeIntegration: true,
+            nodeIntegrationInWorker: true,
+            nodeIntegrationInSubFrames: true,
+            navigateOnDragDrop: false,
+            devTools: true,
+            contextIsolation: false
+        },
+        title: 'P3 Configuration',
+    });
+    Intern.CfgWindow.setMenu(new Menu());
+    Intern.CfgWindow.loadFile('./p3_settings.html');
+    Intern.CfgWindow.on('closed', () => Intern.CfgWindow = null);
+    Intern.CfgWindow.send('switch-tab','diagnostics');
+}
+
+function ShowP3PeerSettings() {
+    if(Intern.CfgWindow) {
+        if(Intern.CfgWindow.isMinimized()) {
+            Intern.CfgWindow.restore();
+        } else {
+            Intern.CfgWindow.focus();
+        }
+        Intern.CfgWindow.webContents.send('switch-tab','peers');
+        return false;
+    }
+    Intern.CfgWindow = new BrowserWindow({
+        width: 380,
+        height: 625,
+        resizable: false,
+        maximizable: false,
+        fullscreenable: false,
+        icon: './p3_tray.png',
+        webPreferences: {
+            nodeIntegration: true,
+            nodeIntegrationInWorker: true,
+            nodeIntegrationInSubFrames: true,
+            navigateOnDragDrop: false,
+            devTools: true,
+            contextIsolation: false
+        },
+        title: 'P3 Configuration',
+    });
+    Intern.CfgWindow.setMenu(new Menu());
+    Intern.CfgWindow.loadFile('./p3_settings.html');
+    Intern.CfgWindow.on('closed', () => Intern.CfgWindow = null);
+    Intern.CfgWindow.send('switch-tab','peers');
 }
 
 

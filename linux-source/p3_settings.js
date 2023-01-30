@@ -11,6 +11,8 @@ var address = "";
 var Status = {};
 var autostart = false;
 
+ipcRenderer.on('switch-tab', (event,tab) => { switchTab(tab) });
+
 setInterval(()=> {
     Status = ipcRenderer.sendSync('status');
     if(Status.secret != secret) {
