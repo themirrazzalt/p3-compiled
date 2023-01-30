@@ -6,7 +6,7 @@ ipc.config.id = 'mikep3';
 ipc.config.appspace = 'svc.';
 var oKey = "";
 function randomHex() {
-    var chars = '0123456789abcdef'.split();
+    var chars = '0123456789abcdef'.split('');
     return chars[Math.floor(Math.random() * chars.length)];
 }
 
@@ -16,7 +16,7 @@ function execute(command,args) {
         ipc.of.mikep3.once(
             `cmd-${id}`,
             function (data) {
-                y(data);
+                y(data.data);
             }
         );
         ipc.of.mikep3.emit(

@@ -1,10 +1,50 @@
 const RawIPC = require('./rawipcapi');
 const EventEmitter = require('events');
-const { Subscription } = require('./rawipcapi');
+
+const Gem = new EventEmitter();
+
+RawIPC.onConnected = function () {
+    RawIPC.Subscription(
+        'state-change',
+        function (state) {
+            Gem.emit('state-change',{
+                state: state.state,
+                address: state.address,
+                connected: state.state === 'online'
+            });
+        }
+    );
+    RawIPC.Subscription('ports-freed', function (port) {
+        Gem.emit(port);
+    });
+    RawIPC.Subscription('port-claimed', function (port) {
+        Gem.emit(port);
+    });
+    try {
+        Gem.emit('socket-init')
+    } catch (error) {
+        return false
+    }
+}
 
 var Clean = {
+    on: function (d,o) {
+        return Gem.on(d,o);
+    },
+    off: function (d,o) {
+        return Gem.off(d,o);
+    },
+    addListener: function (d,o) {
+        return Gem.on(d,o);
+    },
+    removeListener: function (d,o) {
+        return Gem.off(d,o);
+    },
     getState: async () => {
         return await RawIPC.execute('p3.getState');
+    },
+    getAddress: async () => {
+        return await RawIPC.execute('p3.address');
     },
     getPortsInUse: async () => {
         return await RawIPC.execute('p3.portsInUse');
@@ -25,6 +65,17 @@ var Clean = {
                 return
             }
             id = reply.id;
+            sub = RawIPC.Subscription(`fs${id}`, data => {
+                if(data.type == 'connect') {
+                    emitter.emit('connect');
+                } else if(data.type == 'disconnect') {
+                    emitter.emit('disconnect')
+                } else if(data.type == 'error') {
+                    emitter.emit('error', new Error('unknown error'));
+                } else if(data.type == 'message') {
+                    emitter.emit('message', data.message);
+                }
+            });
             emitter.emit('init');
         });
         var emitter = new EventEmitter();
@@ -60,17 +111,8 @@ var Clean = {
                 sub.end();
             }
         };
-        var sub = RawIPC.Subscription(`fs${id}`, data => {
-            if(data.type == 'connect') {
-                emitter.emit('connect');
-            } else if(data.type == 'disconnect') {
-                emitter.emit('disconnect')
-            } else if(data.type == 'error') {
-                emitter.emit('error', new Error('unknown error'));
-            } else if(data.type == 'message') {
-                emitter.emit('message', data.message);
-            }
-        });
+        console.log('sub fs'+id)
+        var sub;
         return client;
     },
     stopPort: async function (port) {
@@ -88,7 +130,7 @@ var Clean = {
                 `pt${port}`,
                 function (raw) {
                     var emitter = new EventEmitter();
-                    Subscription(
+                    RawIPC.Subscription(
                         `fc${raw.id}`,
                         data => {
                             if(data.type == 'message') {
@@ -154,5 +196,7 @@ var Clean = {
     },
     start: async function () {
         await RawIPC.execute('p3.start');
-    },
+    }
 }
+
+module.exports = Clean;
