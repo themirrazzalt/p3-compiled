@@ -95,6 +95,7 @@ const peer: {
 ```
 Properties:
    `id` The id of the peer
+   
      > Deprecated: use `P3Peer.id` instead
    `address` The peer's P3 address
    `port` The peer's response port
