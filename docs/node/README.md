@@ -32,9 +32,34 @@ Returns a boolean representing if the device is connected to the P3 network
 
 ## stopPort
 ```ts
-async stopPort (port: number)
+async stopPort (port: number) => void
 ```
 Paramaters
    `port` The port to stop
 
 Removes the listeners from a port
+
+## listen
+```ts
+listen (port: number, callback: (peer: P3Peer) => void) => void
+```
+Paramaters
+   `port` The port to listen on
+   `callback` A function called when a peer is connected
+      `peer` A [`P3Peer`](#p3peer) representing the connected peer
+
+Listens to incoming connections on a specific port
+
+## stop
+```ts
+async stop () => void
+```
+
+Stops the P3 service
+
+##
+```ts
+async start () => void
+```
+
+Starts the P3 service
