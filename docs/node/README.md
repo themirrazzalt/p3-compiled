@@ -77,3 +77,25 @@ async getAddress () => string
 ```
 
 Gets the P3 address returned by the relay server
+
+## P3Peer
+### id
+```ts
+const id: string
+```
+The id of the peer
+### peer
+```ts
+const peer: {
+  id: string,
+  address: string,
+  port: number,
+  rpt: number
+}
+```
+Properties:
+   `id` The id of the peer
+     > Deprecated: use `P3Peer.id` instead
+   `address` The peer's P3 address
+   `port` The peer's response port
+   `rpt` The peer's response port (alternate)
