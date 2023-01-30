@@ -100,13 +100,13 @@ Properties:
    `port` The peer's response port
    `rpt` The peer's response port (alternate)
 
-### `kill`
+### kill
 ```ts
 async kill () => void
 ```
 Kills the peer
 
-### `kick`
+### kick
 ```ts
 async kick() => void
 ```
