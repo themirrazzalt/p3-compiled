@@ -57,9 +57,23 @@ async stop () => void
 
 Stops the P3 service
 
-##
+## start
 ```ts
 async start () => void
 ```
 
 Starts the P3 service
+
+## getState
+```ts
+async getState () => "online" | "offline" | "error" | "connecting"
+```
+
+Gets the state of the P3 system
+
+## getAddress
+```ts
+async getAddress () => string
+```
+
+Gets the P3 address returned by the relay server
