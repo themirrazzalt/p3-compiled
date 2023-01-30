@@ -3,6 +3,7 @@ var os = require('os');
 var ipc = new IPC();
 ipc.config.retry = 1500;
 ipc.config.id = 'mikep3';
+ipc.config.silent = true;
 ipc.config.appspace = 'svc.';
 var oKey = "";
 function randomHex() {
