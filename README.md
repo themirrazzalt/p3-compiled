@@ -5,21 +5,7 @@ A system-wide P3 library built using IPC for Windows, Mac, and Linux/UNIX
 This allows you to connect your Windows, Mac, or Linux/UNIX device to the P3 network, made for Windows 96!
 
 ## How do I install it?
-On Ubuntu, Raspberry Pi, and Kali, you'll be able to install it using
-```
-sudo apt install mikesoftp3
-```
-
-On anoter Debian-based distro, download `p3compiled-debian-x86_64.deb`, `p3compiled-debian-x64.deb`, or `p3compiled-debian-armvl7.deb` if p3compiled isn't in any of the repositories.
-
-On Arch-based distros like Manjaro or Garuda, you'll be able to use
-```
-sudo pacman -S mikesoftp3
-```
-
-On Windows, go to the `Releases` tab and download either `p3compiled-win32-x86_64.exe` or `p3compiled-win32-x64.exe`.
-
-On Mac OS, go to the `Releases` tab and download `p3compiled-mac-intel_m1_x86_64.dmg`.
+We've released compiled v1.0.0 for Linux x64! Find it [here](https://github.com/themirrazzalt/p3-compiled/releases/tag/Linux-x64)
 
 ## How to Start P3
 
