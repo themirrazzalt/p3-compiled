@@ -1,0 +1,24 @@
+#!/bin/bash
+cp p3_settings.html ../Compiled/p3c-linux-x64/resources/app
+cp p3_settings.js ../Compiled/p3c-linux-x64/resources/app
+cp p3_settings.css ../Compiled/p3c-linux-x64/resources/app
+cp node-p3.js ../Compiled/p3c-linux-x64/resources/app
+cp index.js ../Compiled/p3c-linux-x64/resources/app
+cp package.json ../Compiled/p3c-linux-x64/resources/app
+cp package-lock.json ../Compiled/p3c-linux-x64/resources/app
+
+cp p3_settings.html ../Compiled/p3c-linux-ia32/resources/app
+cp p3_settings.js ../Compiled/p3c-linux-ia32/resources/app
+cp p3_settings.css ../Compiled/p3c-linux-ia32/resources/app
+cp node-p3.js ../Compiled/p3c-linux-ia32/resources/app
+cp index.js ../Compiled/p3c-linux-ia32/resources/app
+cp package.json ../Compiled/p3c-linux-ia32/resources/app
+cp package-lock.json ../Compiled/p3c-linux-ia32/resources/app
+
+cp p3_settings.html ../Compiled/p3c-linux-armv7l/resources/app
+cp p3_settings.js ../Compiled/p3c-linux-armv7l/resources/app
+cp p3_settings.css ../Compiled/p3c-linux-armv7l/resources/app
+cp node-p3.js ../Compiled/p3c-linux-armv7l/resources/app
+cp index.js ../Compiled/p3c-linux-armv7l/resources/app
+cp package.json ../Compiled/p3c-linux-armv7l/resources/app
+cp package-lock.json ../Compiled/p3c-linux-armv7l/resources/app

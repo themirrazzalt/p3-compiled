@@ -4,7 +4,7 @@ var P3 = require('./node-p3');
 var Util=require('./util');
 var os = require('os');
 var child_process = require('child_process');
-var { Tray,app,BrowserWindow,ipcMain, Menu, MenuItem } = require('electron');
+var { Tray,app,BrowserWindow,ipcMain, Menu, MenuItem, dialog } = require('electron');
 var $Home = os.homedir();
 var argv = process.argv.slice(2);
 /**
@@ -25,6 +25,17 @@ ipcMain.on('status', event => {
         secret: p3.key,
         autostart: config.auto_connect
     };
+});
+
+ipcMain.on('latency-test', async (event, peer) => {
+    var test = await p3.runLatencyTest(peer);
+    dialog.showMessageBox(    
+        Intern.CfgWindow,
+        {
+            title: 'Alert',
+            message: `Client-Server time: ${test.clientToServer}ms\nClient-Target time: ${test.clientToTarget}ms`
+        }
+    );
 });
 
 ipcMain.on('p3.setkey', async (event,key) => {
@@ -109,6 +120,18 @@ function getTrayStatusMenu(state) {
             }
         }
     ));
+    tray_menu.append(new MenuItem(
+        {
+            type: 'normal',
+            label: 'Force Reconnect',
+            click: function () {
+                if(p3.active) {
+                    p3.kill();
+                    p3.start();
+                }
+            }
+        }
+    ));
     return tray_menu;
 }
 
@@ -158,7 +181,7 @@ function ShowP3Settings() {
         },
         title: 'P3 Configuration',
     });
-    Intern.CfgWindow.setMenu(new Menu());
+    Intern.CfgWindow.removeMenu();
     Intern.CfgWindow.loadFile('./p3_settings.html');
     Intern.CfgWindow.on('closed', () => Intern.CfgWindow = null);
 }
@@ -190,10 +213,27 @@ function ShowP3Diagnostics() {
         },
         title: 'P3 Configuration',
     });
-    Intern.CfgWindow.setMenu(new Menu());
+    Intern.CfgWindow.removeMenu();
     Intern.CfgWindow.loadFile('./p3_settings.html');
     Intern.CfgWindow.on('closed', () => Intern.CfgWindow = null);
     Intern.CfgWindow.send('switch-tab','diagnostics');
+}
+
+function createP3SettingsMenu() {
+    var menu = new Menu();
+    menu.append(new MenuItem(
+        {
+            type: 'submenu',
+            label: 'File',
+            submenu: [
+                {
+                    label: 'Quit',
+                    accelerator: 'CmdOrCtrl+Q'
+                }
+            ]
+        }
+    ));
+    return menu
 }
 
 function ShowP3PeerSettings() {
@@ -223,8 +263,8 @@ function ShowP3PeerSettings() {
         },
         title: 'P3 Configuration',
     });
-    Intern.CfgWindow.setMenu(new Menu());
-    Intern.CfgWindow.loadFile('./p3_settings.html');
+    Intern.CfgWindow.removeMenu();
+    Intern.CfgWindow.setAutoHideMenuBar(true);
     Intern.CfgWindow.on('closed', () => Intern.CfgWindow = null);
     Intern.CfgWindow.send('switch-tab','peers');
 }

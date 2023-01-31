@@ -11,6 +11,15 @@ var address = "";
 var Status = {};
 var autostart = false;
 
+function LatencyTest() {
+    var peer = document.querySelector('.p3-latency-address').value;
+    if(!peer) { return false; }
+    ipcRenderer.send(
+        'latency-test',
+        peer
+    );
+}
+
 ipcRenderer.on('switch-tab', (event,tab) => { switchTab(tab) });
 
 setInterval(()=> {

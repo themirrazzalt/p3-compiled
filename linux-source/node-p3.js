@@ -43,6 +43,10 @@ var $CONNECTING=false;
 
 var $totalMsg=0;
 var letters = "abcdefghijklmnopqrstuvwxyz+1234567890/ABCDEFGH,:#\\?@-_]{}~";
+var total_nonce = 0;
+function Nonce() {
+  return total_nonce++;
+}
 
 
 function waitUntil(bool) {
@@ -58,8 +62,7 @@ function waitUntil(bool) {
 
 
 
-var key=secret||generateSecretKey()
-
+var key=secret||generateSecretKey();
 
 this.portInUse = function (port) {
   if(ports[port]) {
@@ -69,7 +72,7 @@ this.portInUse = function (port) {
 }
 
 this.getPortsInUse = function () {
-  return Object.keys(ports);
+  return Object.keys(ports).concat([119]);
 }
 
 function $ResponsePort() {
@@ -220,11 +223,12 @@ function P3Client(adr,prt) {
           type: 'heartbeat',
           peerID: $S.id
         },
-        nonce:0
+        nonce:Nonce()
       });
     }, a$.data.heartbeat)
   }
   var _PkE = function (dat) {
+    if(dat.nonce != _nonce) { return false; }
     for(var i = 0; i < $E.connect.length;i++) {
       try {
         $E.fail[i](dat)
@@ -242,6 +246,7 @@ function P3Client(adr,prt) {
   }
   skt.on('packet.err',_PkE);
   this.ended=false;
+  var _nonce = Nonce();
   setTimeout(async function () {
     await waitUntil(function(){return $CONNECTED})
     skt.emit('packet', {
@@ -251,7 +256,7 @@ function P3Client(adr,prt) {
         responsePort: rpt,
         nonce: 0
       },
-      nonce:0,
+      nonce:_nonce,
       dest: adr+":"+prt,
     });
     $NONCE.count=$NONCE.count+1;
@@ -282,7 +287,7 @@ P3Client.prototype.end = function () {
       type:'disconnect',
       peerID:this.server.id
     },
-    nonce:0,
+    nonce:Nonce(),
   });
   /**
    * Wether the server has killed the connection with the client.
@@ -309,18 +314,71 @@ P3Client.prototype.emit = function (data) {
       data:data,
       nonce:this.$NONCE.count
     },
-    nonce:0
+    nonce:Nonce()
   });
   this.$NONCE.count=this.$NONCE.count+1;
 }
 
 
+function runLatencyTest(peer) {
+  return new Promise(resolve => {
+    var nonce = Nonce();
+    var msNow;
+    var nonceNow;
+    var okNow;
+    var nonce_handler = function (data) {
+      if(data.nonce != nonce) { return }
+      nonceNow = Date.now();
+      skt.off('packet.ok',nonce_handler)
+    };
+    var ok_handler = function (data) {
+      if(data.data != 'p3_latency_test ok'
+         && data.source != peer
+         && data.port != 119
+      ) { return }
+      okNow = Date.now();
+      resolve({
+        clientToServer: nonceNow-msNow,
+        clientToTarget: okNow-msNow
+      });
+      skt.off('packet',ok_handler);
+    };
+    skt.on('packet.ok',nonce_handler);
+    skt.on('packet',ok_handler);
+    msNow = Date.now();
+    skt.emit(
+      'packet',
+      {
+        nonce: nonce,
+        dest: `${peer}:119`,
+        data: 'p3_latency_test'
+      }
+    );
+  });
+}
+
+this.runLatencyTest = runLatencyTest;
 
 
 
 
 
 skt.on("packet", function(args) {
+  if(args.port == 119) {
+    if(args.data == 'p3_latency_test') {
+      skt.emit(
+        'packet',
+        {
+          nonce: Nonce(),
+          dest: `${args.source}:119`,
+          data: 'p3_latency_test ok'
+        }
+      );
+      return null;
+    } else if(args.data == 'p3_latency_test ok') {
+      return null;
+    }
+  }
   if(args.data.type=="connect") {
     if(ports[args.port]) {
       var peerid=generatePeerID();
@@ -335,7 +393,7 @@ skt.on("packet", function(args) {
           nonce:0
         },
         dest:args.source+":"+args.data.responsePort,
-        nonce:0
+        nonce:Nonce()
       });
       var t$EVT = {
         message:[]
@@ -354,10 +412,10 @@ skt.on("packet", function(args) {
             data:data,
             peerID:null,
           success:true,
-            nonce:0
+            nonce:$NONCE.count
           },
           dest:args.source+":"+args.data.responsePort,
-          nonce:$NONCE.count
+          nonce:Nonce()
         });
             $NONCE.count = $NONCE.count+1;
           },
@@ -367,10 +425,10 @@ skt.on("packet", function(args) {
             type:'disconnect',
             peerID:null,
           success:true,
-            nonce:0
+            nonce:$NONCE.count
           },
           dest:args.source+":"+args.data.responsePort,
-          nonce:$NONCE.count
+          nonce:Nonce()
         });
             $NONCE.count = $NONCE.count+1;
           }
@@ -391,10 +449,10 @@ skt.on("packet", function(args) {
           data:data,
           peerID:null,
         success:true,
-          nonce:0
+          nonce:$NONCE.count
         },
         dest:args.source+":"+args.data.responsePort,
-        nonce:$NONCE.count
+        nonce:Nonce()
       });
           $NONCE.count = $NONCE.count+1;
         }

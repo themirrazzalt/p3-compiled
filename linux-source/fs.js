@@ -1,4 +1,4 @@
-const fs = require('node:fs/promises');
+const fs = require('fs').promises;
 var mod = {
     readstr: async function (path) {
         return await fs.readFile(path, {
