@@ -53,4 +53,4 @@ Enter the `mikesoftp3` command into the terminal.
 ## Demo
 ![Demo 1](/what.png)
 
-![Demo 2](/P3Compiled x SuperTerm x Remote Console x Manjaro.png)
+![Demo 2](/P3Compiled%20x%20SuperTerm%20x%20Remote Console%20x%20Manjaro.png)
